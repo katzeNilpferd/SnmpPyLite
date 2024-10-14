@@ -24,7 +24,8 @@ class SNMPClient:
         # Реализация SNMP WALK
         pass
 
+
 if __name__ == '__main__':
-    client = SNMPClient('192.168.69.100', community='public')
+    client = SNMPClient('192.168.45.158', community='public')
     response = client.get('1.3.6.1.2.1.1.1.0')  # OID для sysDescr
     print(f"Ответ SNMP: {response}")

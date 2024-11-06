@@ -46,7 +46,16 @@ class ASN1OctetString(ASN1Element):
     @staticmethod
     def decode(data):
         length = data[1]
-        return data[2:2+length].decode(), data[2+length:]
+        raw_bytes = data[2:2+length]
+        
+        try:
+            # Пробуем декодировать как UTF-8 строку
+            decoded_string = raw_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            # Если декодирование не удается, возвращаем raw байты в hex формате
+            decoded_string = raw_bytes.hex()  # или просто raw_bytes, если так нужно
+        
+        return decoded_string, data[2+length:]
 
     @staticmethod
     def encode(value):
@@ -102,6 +111,117 @@ class ASN1Oid(ASN1Element):
                     encoded_part[-1] &= 0x7F
                 encoded_oid += bytes(encoded_part)
         return bytes([0x06, len(encoded_oid)]) + encoded_oid
+
+
+class ASN1IpAddress(ASN1Element):
+    """
+    ASN.1 IpAddress элемент.
+    """
+    @staticmethod
+    def decode(data):
+        length = data[1]
+        if length != 4:
+            raise ValueError("IpAddress должен быть длиной 4 байта")
+        ip_bytes = data[2:6]
+        ip_address = ".".join(map(str, ip_bytes))  # Преобразование в строковый формат IP
+        return ip_address, data[6:]
+
+    @staticmethod
+    def encode(ip_address):
+        ip_parts = ip_address.split(".")
+        if len(ip_parts) != 4:
+            raise ValueError("Неверный формат IP-адреса")
+        ip_bytes = bytes(map(int, ip_parts))
+        return bytes([0x40]) + ASN1Element.encode_length(4) + ip_bytes
+
+
+class ASN1Counter32(ASN1Element):
+    """
+    ASN.1 Counter32 элемент.
+    """
+    @staticmethod
+    def decode(data):
+        length = data[1]
+        value = int.from_bytes(data[2:2+length], byteorder='big')
+        return value, data[2+length:]
+
+    @staticmethod
+    def encode(value):
+        if not isinstance(value, int) or value < 0 or value > 0xFFFFFFFF:
+            raise ValueError("Counter32 должен быть положительным целым числом и не превышать 32 бита")
+        encoded_value = value.to_bytes(4, byteorder='big')  # Counter32 всегда 4 байта
+        return bytes([0x41]) + ASN1Element.encode_length(len(encoded_value)) + encoded_value
+
+
+class ASN1Gauge(ASN1Element):
+    """
+    ASN.1 Gauge32 элемент.
+    """
+    @staticmethod
+    def decode(data):
+        length = data[1]
+        value = int.from_bytes(data[2:2+length], byteorder='big')
+        return value, data[2+length:]
+
+    @staticmethod
+    def encode(value):
+        encoded_value = value.to_bytes((value.bit_length() + 7) // 8 or 1, byteorder='big', signed=False)
+        return bytes([0x42]) + ASN1Element.encode_length(len(encoded_value)) + encoded_value
+
+
+class ASN1TimeTicks(ASN1Element):
+    """
+    ASN.1 TimeTicks элемент.
+    """
+    @staticmethod
+    def decode(data):
+        if data[0] != 0x43:
+            raise ValueError("Неверный тег для TimeTicks")
+        length = data[1]
+        value = int.from_bytes(data[2:2+length], byteorder='big')
+        return value, data[2+length:]
+
+    @staticmethod
+    def encode(value):
+        if not isinstance(value, int) or value < 0:
+            raise ValueError("TimeTicks должен быть положительным целым числом")
+        encoded_value = value.to_bytes((value.bit_length() + 7) // 8 or 1, byteorder='big')
+        return bytes([0x43]) + ASN1Element.encode_length(len(encoded_value)) + encoded_value
+
+
+class ASN1Counter64(ASN1Element):
+    """
+    ASN.1 Counter64 элемент.
+    """
+    @staticmethod
+    def decode(data):
+        length = data[1]
+        value = int.from_bytes(data[2:2+length], byteorder='big')
+        return value, data[2+length:]
+
+    @staticmethod
+    def encode(value):
+        if not isinstance(value, int) or value < 0 or value > 0xFFFFFFFFFFFFFFFF:
+            raise ValueError("Counter64 должен быть положительным целым числом и не превышать 64 бита")
+        encoded_value = value.to_bytes(8, byteorder='big')  # Counter64 всегда 8 байт
+        return bytes([0x46]) + ASN1Element.encode_length(len(encoded_value)) + encoded_value
+
+
+class ASN1EndOfMibView(ASN1Element):
+    """
+    ASN.1 EndOfMibView элемент.
+    """
+    @staticmethod
+    def decode(data):
+        # Длина всегда должна быть 0
+        length = data[1]
+        if length != 0:
+            raise ValueError("EndOfMibView должен иметь длину 0")
+        return 'endOfMibView', data[2:]
+
+    @staticmethod
+    def encode():
+        return bytes([0x82, 0x00])  # ASN.1 тег для EndOfMibView с нулевой длиной
 
 
 class ASN1Tagged(ASN1Element):

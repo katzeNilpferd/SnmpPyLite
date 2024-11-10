@@ -1,10 +1,10 @@
-from transport import Transport
-from message import SNMPMessage
-from format import SNMPFormat
+from .transport import Transport
+from .message import SNMPMessage
+from .format import SNMPFormat
 
 
 class SNMPClient:
-    def __init__(self, ip: str, community='public', version=0, port=161, timeout=1, retries=5):
+    def __init__(self, ip: str, community='public', version=0, port=161, timeout=1, retries=3):
         self.ip = ip
         self.community = community
         self.version = version
@@ -15,16 +15,16 @@ class SNMPClient:
         self.message = SNMPMessage(version, community)
         self.format = SNMPFormat()
         
-    def get(self, oid):
+    def get(self, oid: str) -> dict:
         return self._send_request('get', oid)
     
-    def get_next(self, oid):
+    def get_next(self, oid: str) -> dict:
         return self._send_request('get_next', oid)
     
-    def get_bulk(self, oid):
+    def get_bulk(self, oid: str) -> dict:
         return self._send_request('get_bulk', oid)
 
-    def get_walk(self, oid):
+    def get_walk(self, oid: str) -> 'Iterable[dict]':
         current_oid = oid
         
         while True:
@@ -40,7 +40,7 @@ class SNMPClient:
             finally:
                 yield response
 
-    def set(self, oid, value, value_type):
+    def set(self, oid: str, value_type: str, value: str | int) -> dict:
         return self._send_request('set', oid, value_type=value_type, value=value)
     
     def _send_request(self, request_type, oid, **kwargs):

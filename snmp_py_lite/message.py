@@ -1,5 +1,5 @@
 import time
-from encoder import *
+from .encoder import *
 
 
 class SNMPMessage:

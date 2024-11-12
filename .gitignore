@@ -1,4 +1,18 @@
-.idea/
+# Byte-compiled
 __pycache__/
 
+# Unit test / coverage reports
+.pytest_cache
+
+# PyCharm
+.idea/
+
+# Distribution / packaging
+*.egg-info/
+
+# Environments
+.venv
+venv/
+
+# Else
 constants.py

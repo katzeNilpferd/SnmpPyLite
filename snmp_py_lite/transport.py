@@ -16,9 +16,14 @@ class Transport:
                 sock.sendto(message, (self.ip, self.port))
                 data, _ = sock.recvfrom(4096)
                 return data
+            
             except Exception as e:
                 if attempt == self.retries - 1:
-                    raise e
+                    
+                    if str(e) == 'timed out':
+                        raise ValueError('Timed out')
+                    else:
+                        raise ValueError('Incorrect ip address')
                 
             finally:
                 sock.close()

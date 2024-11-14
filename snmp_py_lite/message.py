@@ -33,13 +33,16 @@ class SNMPMessage:
         return self._format_message_content(oid, 0xA3, value_type, value)
     
     def _format_message_content(self, oid, pdu_tag, value_type=None, value=None):
-        version_encoded = ASN1Integer.encode(self.version)
-        community_encoded = ASN1OctetString.encode(self.community)
-        
-        pdu = PDU.create_get_request_pdu(oid, pdu_tag, value_type, value)
-        
-        message_content = version_encoded + community_encoded + pdu
-        return ASN1Tagged.encode(0x30, message_content)
+        try:
+            version_encoded = ASN1Integer.encode(self.version)
+            community_encoded = ASN1OctetString.encode(self.community)
+            
+            pdu = PDU.create_get_request_pdu(oid, pdu_tag, value_type, value)
+            
+            message_content = version_encoded + community_encoded + pdu
+            return ASN1Tagged.encode(0x30, message_content)
+        except Exception as e:
+            raise ValueError(f'Message encode operation error. {e}')
     
     def parse_response(self, data):
         self._check_integrity(data)

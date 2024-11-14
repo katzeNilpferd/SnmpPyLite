@@ -7,7 +7,6 @@ print(response)
 
 """
     {'ip': '192.168.126.10',
-    'status': 'ok',
     'version': 1,
     'community': 'private',
     'request_id': 1732336125,

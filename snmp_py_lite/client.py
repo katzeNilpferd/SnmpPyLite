@@ -1,6 +1,7 @@
 from .transport import Transport
 from .message import SNMPMessage
 from .format import SNMPFormat
+from typing import Generator
 
 
 class SNMPClient:
@@ -24,7 +25,8 @@ class SNMPClient:
     def get_bulk(self, oid: str) -> dict:
         return self._send_request('get_bulk', oid)
 
-    def get_walk(self, oid: str) -> 'Iterable[dict]':
+    def get_walk(self, oid: str) -> Generator[dict, None, None]:
+        oid = SNMPFormat.format_oid(oid)
         current_oid = oid
         
         while True:
@@ -41,29 +43,24 @@ class SNMPClient:
                 yield response
 
     def set(self, oid: str, value_type: str, value: str | int) -> dict:
-        return self._send_request('set', oid, value_type=value_type, value=value)
+        return self._send_request('set', oid, value_type, value)
     
-    def _send_request(self, request_type, oid, **kwargs):
-        status = 'ok'
-        raw_data = list()
-
-        try:
-            if request_type == 'get':
-                request = self.message.create_get_request(oid)
-            elif request_type == 'get_next':
-                request = self.message.create_get_next_request(oid)
-            elif request_type == 'get_bulk':
-                request = self.message.create_get_bulk_request(oid)
-            elif request_type == 'set':
-                value = kwargs.get('value')
-                value_type = kwargs.get('value_type')
-                request = self.message.create_set_request(oid, value_type, value)
-            else:
-                raise ValueError("invalid request type")
-                
-            response = self.transport.send(request)
-            raw_data = self.message.parse_response(response)
-        except Exception as e:
-            status = str(e)
-
-        return self.format.formar_response(self.ip, status, raw_data)
+    def _send_request(self, request_type, oid, *args):
+        oid = SNMPFormat.format_oid(oid)
+        
+        if request_type == 'get':
+            request = self.message.create_get_request(oid)
+        elif request_type == 'get_next':
+            request = self.message.create_get_next_request(oid)
+        elif request_type == 'get_bulk':
+            request = self.message.create_get_bulk_request(oid)
+        elif request_type == 'set':
+            value = args[0]
+            value_type = args[1]
+            request = self.message.create_set_request(oid, value_type, value)
+        else:
+            raise ValueError("invalid request type")
+        
+        response = self.transport.send(request)
+        raw_data = self.message.parse_response(response)
+        return self.format.formar_response(self.ip, raw_data)

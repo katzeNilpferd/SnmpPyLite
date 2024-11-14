@@ -55,8 +55,8 @@ class SNMPClient:
         elif request_type == 'get_bulk':
             request = self.message.create_get_bulk_request(oid)
         elif request_type == 'set':
-            value = args[0]
-            value_type = args[1]
+            value_type = args[0]
+            value = args[1]
             request = self.message.create_set_request(oid, value_type, value)
         else:
             raise ValueError("invalid request type")

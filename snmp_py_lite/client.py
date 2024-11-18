@@ -22,8 +22,11 @@ class SNMPClient:
     def get_next(self, oid: str) -> dict:
         return self._send_request('get_next', oid)
     
-    def get_bulk(self, oid: str) -> dict:
-        return self._send_request('get_bulk', oid)
+    def get_bulk(self, oid: str, non_repeaters=0, max_repetitions=10) -> dict:
+        if self.version == 0:
+            raise Exception('For the get_bulk operation, the specified version must be 2 or higher')
+        
+        return self._send_request('get_bulk', oid, non_repeaters, max_repetitions)
 
     def get_walk(self, oid: str) -> Generator[dict, None, None]:
         oid = SNMPFormat.format_oid(oid)
@@ -50,14 +53,20 @@ class SNMPClient:
         
         if request_type == 'get':
             request = self.message.create_get_request(oid)
+            
         elif request_type == 'get_next':
             request = self.message.create_get_next_request(oid)
+            
         elif request_type == 'get_bulk':
-            request = self.message.create_get_bulk_request(oid)
+            non_repeaters = args[0]
+            max_repetitions = args[1]
+            request = self.message.create_get_bulk_request(oid, non_repeaters, max_repetitions)
+            
         elif request_type == 'set':
             value_type = args[0]
             value = args[1]
             request = self.message.create_set_request(oid, value_type, value)
+            
         else:
             raise ValueError("invalid request type")
         

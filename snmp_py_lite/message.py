@@ -26,18 +26,18 @@ class SNMPMessage:
     def create_get_next_request(self, oid):
         return self._format_message_content(oid, 0xA1)
     
-    def create_get_bulk_request(self, oid):
-        return self._format_message_content(oid, 0xA5)
+    def create_get_bulk_request(self, oid, non_repeaters, max_repetitions):
+        return self._format_message_content(oid, 0xA5, non_repeaters=non_repeaters, max_repetitions=max_repetitions)
     
     def create_set_request(self, oid, value_type, value):
-        return self._format_message_content(oid, 0xA3, value_type, value)
+        return self._format_message_content(oid, 0xA3, value_type=value_type, value=value)
     
-    def _format_message_content(self, oid, pdu_tag, value_type=None, value=None):
+    def _format_message_content(self, oid, pdu_tag, **kwargs):
         try:
             version_encoded = ASN1Integer.encode(self.version)
             community_encoded = ASN1OctetString.encode(self.community)
             
-            pdu = PDU.create_get_request_pdu(oid, pdu_tag, value_type, value)
+            pdu = PDU.create_get_request_pdu(oid, pdu_tag, **kwargs)
             
             message_content = version_encoded + community_encoded + pdu
             return ASN1Tagged.encode(0x30, message_content)
@@ -78,20 +78,16 @@ class PDU:
         }
 
     @staticmethod
-    def create_get_request_pdu(oid, pdu_tag, value_type=None, value=None):
+    def create_get_request_pdu(oid, pdu_tag, **kwargs):
         oid_encoded = ASN1Oid.encode(oid)
         request_id = ASN1Integer.encode(int(time.time() * 161) % 2147483647)
 
-        # В зависимости от PDU задаем error_status и error_index
-        if pdu_tag != 0xA5:
-            error_status = ASN1Integer.encode(0)
-            error_index = ASN1Integer.encode(0)
-        else:
-            error_status = ASN1Integer.encode(0)
-            error_index = ASN1Integer.encode(20)
+        error_status = ASN1Integer.encode(kwargs.get('non_repeaters', 0))
+        error_index = ASN1Integer.encode(kwargs.get('max_repetitions', 0))
         
-        # Варбинд в зависимости от значения value
-        if value_type and value is not None:
+        if {'value_type', 'value'} <= kwargs.keys():
+            value_type = kwargs.get('value_type')
+            value = kwargs.get('value')
             encoder_class = PDU().type_map.get(value_type)
             value_encoded = encoder_class.encode(value)
         else:

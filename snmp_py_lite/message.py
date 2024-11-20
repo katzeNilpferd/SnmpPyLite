@@ -72,9 +72,22 @@ class PDU:
     def __init__(self):
         self.type_map = {
             'INTEGER': ASN1Integer,
+            'i': ASN1Integer,
+            
             'STRING': ASN1OctetString,
-            'Gauge': ASN1Gauge,
-            'Counter32': ASN1Counter32
+            's': ASN1OctetString,
+            
+            'IPADDRESS': ASN1IpAddress,
+            'a': ASN1IpAddress,
+            
+            'COUNTER': ASN1Counter32,
+            'c': ASN1Counter32,
+            
+            'GAUGE': ASN1Gauge,
+            'g': ASN1Gauge,
+            
+            'TIMETICKS': ASN1TimeTicks,
+            't': ASN1TimeTicks
         }
 
     @staticmethod

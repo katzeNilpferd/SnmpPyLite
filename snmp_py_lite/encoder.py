@@ -49,7 +49,15 @@ class ASN1OctetString(ASN1Element):
     @staticmethod
     def decode(data):
         length = data[1]
-        raw_bytes = data[2:2+length]
+        
+        if length & 0x80:
+            num_length_bytes = length & 0x7F
+            length = int.from_bytes(data[2:2 + num_length_bytes], 'big')
+            raw_bytes_start = 2 + num_length_bytes
+        else:
+            raw_bytes_start = 2
+        
+        raw_bytes = data[raw_bytes_start:raw_bytes_start + length]
         
         try:
             # Пробуем декодировать как UTF-8 строку
@@ -58,7 +66,7 @@ class ASN1OctetString(ASN1Element):
             # Если декодирование не удается, возвращаем raw байты в hex формате
             decoded_string = raw_bytes.hex()  # или просто raw_bytes, если так нужно
         
-        return decoded_string, data[2+length:]
+        return decoded_string, data[raw_bytes_start + length:]
 
     @staticmethod
     def encode(value):

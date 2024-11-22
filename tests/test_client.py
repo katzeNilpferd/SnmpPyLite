@@ -3,7 +3,7 @@ from snmp_py_lite import SNMPClient
 
 @pytest.fixture
 def client():
-    return SNMPClient(ip='192.168.126.10', version=1)
+    return SNMPClient(ip='192.168.126.10', version='2c')
 
 # Checking the type of output data and one of the keys (Only for the available node)
 def test_get_request(client):

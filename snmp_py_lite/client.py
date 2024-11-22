@@ -2,18 +2,20 @@ from .transport import Transport
 from .message import SNMPMessage
 from .format import SNMPFormat
 from typing import Union, Generator
+from .constants import *
 
 
 class SNMPClient:
-    def __init__(self, ip: str, community='public', version=0, port=161, timeout=1, retries=3):
+    def __init__(self, ip: str, community='public', version='1', port=161, timeout=1, retries=3):
         self.ip = ip
         self.community = community
-        self.version = version
+        self.version = SNMP_VERSIONS[version]
         self.port = port
         self.timeout = timeout
         self.retries = retries
+        
         self.transport = Transport(ip, port, timeout, retries)
-        self.message = SNMPMessage(version, community)
+        self.message = SNMPMessage(self.version, community)
         self.format = SNMPFormat()
         
     def get(self, oid: str) -> dict:
@@ -24,7 +26,7 @@ class SNMPClient:
     
     def get_bulk(self, oid: str, non_repeaters=0, max_repetitions=10) -> dict:
         if self.version == 0:
-            raise Exception('For the get_bulk operation, the specified version must be 2 or higher')
+            raise Exception('For the get_bulk operation, the specified version must be 2c or higher')
         
         return self._send_request('get_bulk', oid, non_repeaters, max_repetitions)
 

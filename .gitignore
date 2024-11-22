@@ -13,6 +13,3 @@ __pycache__/
 # Environments
 .venv
 venv/
-
-# Else
-constants.py

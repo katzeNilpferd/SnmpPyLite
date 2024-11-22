@@ -1,7 +1,7 @@
 from .transport import Transport
 from .message import SNMPMessage
 from .format import SNMPFormat
-from typing import Generator
+from typing import Union, Generator
 
 
 class SNMPClient:
@@ -45,7 +45,7 @@ class SNMPClient:
             finally:
                 yield response
 
-    def set(self, oid: str, value_type: str, value: str | int) -> dict:
+    def set(self, oid: str, value_type: str, value: Union[str, int]) -> dict:
         return self._send_request('set', oid, value_type, value)
     
     def _send_request(self, request_type, oid, *args):

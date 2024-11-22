@@ -10,7 +10,7 @@ print(response)
     'version': 1,
     'community': 'public',
     'request_id': 1732189878,
-    'error_status': 0,
+    'error_status': noError(0),
     'error_index': 0,
     'data': {'1.3.6.1.2.1.1.2.0': '1.3.6.1.4.1.171.10.75.15.2',
             '1.3.6.1.2.1.1.3.0': 70921899,

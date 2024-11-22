@@ -1,4 +1,5 @@
 import re
+from .constants import ERROR_STATUS
 
 
 class SNMPFormat:
@@ -19,7 +20,7 @@ class SNMPFormat:
             'version': raw_data[0],
             'community': raw_data[1],
             'request_id': raw_data[2],
-            'error_status': raw_data[3],
+            'error_status': f'{ERROR_STATUS[raw_data[3]]}({raw_data[3]})',
             'error_index': raw_data[4],
             'data': {}
         }

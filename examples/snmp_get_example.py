@@ -10,7 +10,7 @@ print(response)
     'version': 1,
     'community': 'public',
     'request_id': 1732171134,
-    'error_status': 0,
+    'error_status': noError(0),
     'error_index': 0,
     'data': {'1.3.6.1.2.1.1.1.0': 'DES-1210-28/ME/B2'}
     }

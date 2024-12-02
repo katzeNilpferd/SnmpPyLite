@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="SnmpPyLite",
+    name="snmp_py_lite",
     version="0.1.0",
     author="Evgeny Ockatiev",
     author_email="evgeny.ockatiev@gmail.com",
